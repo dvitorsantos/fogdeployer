@@ -33,14 +33,19 @@ public class DeployService {
 
     public void deployEdge(DeployRequest deployRequest) {
         ObjectMapper mapper = new ObjectMapper();
-        try {
-            mqttService.subscribe("/deploy-status/" + deployRequest.getHostUuid(), (topic, message) -> {
-                System.out.println("Deploy status received: " + message.getPayload());
-            });
+        new Thread(() -> {
+            try {
+            
+                mqttService.subscribe("/deploy-status/" + deployRequest.getHostUuid(), (topic, message) -> {
+                    System.out.println("Deploy status received: " + message.getPayload());
+                });
 
-            mqttService.publish("/deploy/" + deployRequest.getHostUuid(), mapper.writeValueAsBytes(deployRequest));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+                System.out.println("Publishing deploy request to " + "/deploy/" + deployRequest.getHostUuid());
+                mqttService.publish("/deploy/" + deployRequest.getHostUuid(), mapper.writeValueAsBytes(deployRequest));
+        
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 }
