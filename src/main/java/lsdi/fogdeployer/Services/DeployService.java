@@ -27,7 +27,7 @@ public class DeployService {
     }
 
     public void deployFog(DeployRequest deployRequest) {
-        deployRequest.getRules().forEach(rule -> restTemplate.postForObject(COLECTOR_URL + "/subscribe/" + rule.getTarget() + "/" + rule.getEventType() + "/" + rule.getOutputEventType(), null, DeployRequest.class));
+        deployRequest.getRules().forEach(rule -> restTemplate.postForObject(COLECTOR_URL + "/subscribe/" + rule.getEventType(), null, DeployRequest.class));
         restTemplate.postForObject(WORKER_URL + "/deploy", deployRequest, DeployRequest.class);
     }
 
@@ -40,7 +40,7 @@ public class DeployService {
                     System.out.println("Deploy status received: " + message.getPayload());
                 });
 
-                System.out.println("Publishing deploy request to " + "/deploy/" + deployRequest.getHostUuid());
+                System.out.println("INFO: Deploy request published to " + "/deploy/" + deployRequest.getHostUuid());
                 mqttService.publish("/deploy/" + deployRequest.getHostUuid(), mapper.writeValueAsBytes(deployRequest));
         
             } catch (JsonProcessingException e) {
